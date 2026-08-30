@@ -1,0 +1,312 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Code Companion design system — dark-first, polished SaaS aesthetic
+ * with smooth animations and glassmorphic cards.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --shadow-vault: 0 1px 0 0 oklch(1 0 0 / 6%) inset, 0 18px 40px -24px oklch(0 0 0 / 80%);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.13 0.015 258);
+  --foreground: oklch(0.95 0.006 250);
+  --surface: oklch(0.19 0.017 258);
+  --surface-foreground: oklch(0.95 0.006 250);
+  --card: oklch(0.18 0.016 258);
+  --card-foreground: oklch(0.95 0.006 250);
+  --popover: oklch(0.18 0.016 258);
+  --popover-foreground: oklch(0.95 0.006 250);
+  --primary: oklch(0.78 0.16 158);
+  --primary-foreground: oklch(0.15 0.03 160);
+  --secondary: oklch(0.24 0.018 258);
+  --secondary-foreground: oklch(0.94 0.006 250);
+  --muted: oklch(0.22 0.016 258);
+  --muted-foreground: oklch(0.65 0.014 256);
+  --accent: oklch(0.7 0.13 232);
+  --accent-foreground: oklch(0.17 0.03 240);
+  --destructive: oklch(0.63 0.2 24);
+  --destructive-foreground: oklch(0.97 0.01 20);
+  --success: oklch(0.75 0.16 158);
+  --success-foreground: oklch(0.18 0.03 160);
+  --warning: oklch(0.8 0.14 78);
+  --warning-foreground: oklch(0.22 0.04 70);
+  --border: oklch(0.26 0.018 258);
+  --input: oklch(0.22 0.016 258);
+  --ring: oklch(0.78 0.16 158);
+  --chart-1: oklch(0.78 0.16 158);
+  --chart-2: oklch(0.7 0.13 232);
+  --chart-3: oklch(0.8 0.14 78);
+  --chart-4: oklch(0.68 0.16 300);
+  --chart-5: oklch(0.63 0.2 24);
+  --sidebar: oklch(0.16 0.015 258);
+  --sidebar-foreground: oklch(0.93 0.006 250);
+  --sidebar-primary: oklch(0.78 0.16 158);
+  --sidebar-primary-foreground: oklch(0.18 0.03 160);
+  --sidebar-accent: oklch(0.24 0.018 258);
+  --sidebar-accent-foreground: oklch(0.94 0.006 250);
+  --sidebar-border: oklch(0.26 0.018 258);
+  --sidebar-ring: oklch(0.78 0.16 158);
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px oklch(0.78 0.16 158 / 15%);
+  }
+  50% {
+    box-shadow: 0 0 40px oklch(0.78 0.16 158 / 30%);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes success-bounce {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes typewriter-cursor {
+  0%, 100% { border-color: var(--color-primary); }
+  50% { border-color: transparent; }
+}
+
+/* ==========================================
+   BASE STYLES
+   ========================================== */
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(ellipse 100% 60% at 50% -20%, oklch(0.78 0.16 158 / 8%), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 100% -10%, oklch(0.7 0.13 232 / 6%), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 0% 50%, oklch(0.68 0.16 300 / 4%), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  code,
+  pre,
+  textarea.code {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: oklch(0.78 0.16 158 / 25%);
+    color: var(--color-foreground);
+  }
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+@utility panel {
+  background-color: oklch(0.18 0.016 258 / 80%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid oklch(0.3 0.02 258 / 50%);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 0 0 oklch(1 0 0 / 4%) inset,
+    0 20px 50px -20px oklch(0 0 0 / 60%);
+}
+
+@utility animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.5s ease both;
+}
+
+@utility animate-scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-slide-down {
+  animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-success-bounce {
+  animation: success-bounce 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@utility animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@utility delay-100 {
+  animation-delay: 100ms;
+}
+@utility delay-200 {
+  animation-delay: 200ms;
+}
+@utility delay-300 {
+  animation-delay: 300ms;
+}
+@utility delay-400 {
+  animation-delay: 400ms;
+}
+@utility delay-500 {
+  animation-delay: 500ms;
+}
+@utility delay-600 {
+  animation-delay: 600ms;
+}
+@utility delay-700 {
+  animation-delay: 700ms;
+}
+
+@utility glass {
+  background: oklch(0.2 0.016 258 / 60%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid oklch(0.35 0.02 258 / 30%);
+}
+
+@utility glow-border {
+  position: relative;
+}
+
+@utility gradient-text {
+  background: linear-gradient(135deg, oklch(0.78 0.16 158), oklch(0.7 0.13 232));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@utility shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.016 258) 0%,
+    oklch(0.28 0.02 258) 50%,
+    oklch(0.22 0.016 258) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
