@@ -33,15 +33,19 @@ export const Route = createFileRoute("/")({
 });
 
 const PLATFORMS = [
+  { name: "All Platforms", icon: "🚀", color: "from-purple-500/20 to-pink-500/20 border-purple-500/30" },
+  { name: "Codeforces", icon: "🔴", color: "from-red-500/20 to-rose-500/20 border-red-500/30" },
   { name: "CodeChef", icon: "🍳", color: "from-amber-500/20 to-orange-500/20 border-amber-500/30" },
   { name: "GeeksforGeeks", icon: "🟢", color: "from-green-500/20 to-emerald-500/20 border-green-500/30" },
   { name: "CodeStudio", icon: "🔷", color: "from-blue-500/20 to-cyan-500/20 border-blue-500/30" },
 ] as const;
 
+const SINGLE_PLATFORMS = ["Codeforces", "CodeChef", "GeeksforGeeks", "CodeStudio"] as const;
+
 const LANGUAGES = [
+  "Java",
   "C++",
   "Python",
-  "Java",
   "JavaScript",
   "C",
   "C#",
@@ -57,7 +61,7 @@ function HomePage() {
   const [language, setLanguage] = useState<string>(LANGUAGES[0]);
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastCommitUrl, setLastCommitUrl] = useState<string | null>(null);
+  const [lastCommits, setLastCommits] = useState<{ platform: string; commitUrl?: string }[]>([]);
 
   const handleSubmit = async () => {
     if (!problemName.trim()) {
@@ -70,19 +74,46 @@ function HomePage() {
     }
 
     setIsSubmitting(true);
-    setLastCommitUrl(null);
+    setLastCommits([]);
+
+    const platformsToSubmit =
+      platform === "All Platforms" ? [...SINGLE_PLATFORMS] : [platform];
 
     try {
+      // Calls Gemini once on the server and pushes to all target repositories
       const result = await submitSolution({
-        data: { platform, problemName: problemName.trim(), language, code },
+        data: {
+          platform: platformsToSubmit.length === 1 ? platformsToSubmit[0] : undefined,
+          platforms: platformsToSubmit,
+          problemName: problemName.trim(),
+          language,
+          code,
+        },
       });
 
-      toast.success(result.message);
-      setLastCommitUrl(result.commitUrl || null);
-      setProblemName("");
-      setCode("");
+      if (result.results && result.results.length > 0) {
+        const successes = result.results.filter((r: any) => r.success);
+        const failures = result.results.filter((r: any) => !r.success);
+
+        if (successes.length > 0) {
+          setLastCommits(successes);
+          toast.success(result.message || `Pushed to ${successes.map((s: any) => s.platform).join(", ")}!`);
+          setProblemName("");
+          setCode("");
+        }
+
+        if (failures.length > 0) {
+          toast.error(
+            failures.map((f: any) => `${f.platform}: ${f.error}`).join("\n"),
+          );
+        }
+      } else {
+        toast.success(result.message || "Submitted successfully!");
+        setProblemName("");
+        setCode("");
+      }
     } catch (err: any) {
-      console.error(err);
+      console.error("Submission error:", err);
       toast.error(err?.message || "Something went wrong. Check the console.");
     } finally {
       setIsSubmitting(false);
@@ -129,7 +160,7 @@ function HomePage() {
           {/* Stats row */}
           <div className="animate-fade-in-up delay-300 mt-8 flex flex-wrap gap-6">
             {[
-              { label: "Platforms", value: "3" },
+              { label: "Platforms", value: "4" },
               { label: "Languages", value: "10" },
               { label: "Files/commit", value: "2" },
             ].map((stat) => (
@@ -162,7 +193,7 @@ function HomePage() {
               <label className="mb-3 block text-sm font-medium text-foreground">
                 Platform
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {PLATFORMS.map((p) => (
                   <button
                     key={p.name}
@@ -297,25 +328,34 @@ function HomePage() {
             </div>
 
             {/* Success Banner */}
-            {lastCommitUrl && (
-              <div className="animate-success-bounce flex items-center gap-3 rounded-xl border border-success/20 bg-gradient-to-r from-success/5 to-success/10 px-5 py-4 text-sm">
+            {lastCommits.length > 0 && (
+              <div className="animate-success-bounce flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl border border-success/20 bg-gradient-to-r from-success/5 to-success/10 px-5 py-4 text-sm">
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success/20">
                   <CheckCircle2 className="size-4 text-success" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-success">Committed successfully!</p>
+                  <p className="font-medium text-success">
+                    Committed successfully to {lastCommits.map((c) => c.platform).join(", ")}!
+                  </p>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     Solution and README pushed in one commit
                   </p>
                 </div>
-                <a
-                  href={lastCommitUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex shrink-0 items-center gap-1.5 rounded-lg bg-success/10 px-3 py-1.5 text-xs font-medium text-success transition-colors hover:bg-success/20"
-                >
-                  View commit <ExternalLink className="size-3" />
-                </a>
+                <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+                  {lastCommits.map((c) =>
+                    c.commitUrl ? (
+                      <a
+                        key={c.platform}
+                        href={c.commitUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg bg-success/10 px-3 py-1.5 text-xs font-medium text-success transition-colors hover:bg-success/20"
+                      >
+                        {c.platform} <ExternalLink className="size-3" />
+                      </a>
+                    ) : null,
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -326,9 +366,9 @@ function HomePage() {
           {[
             {
               icon: FolderGit2,
-              title: "3 repos, organized",
+              title: "4 repos, organized",
               description:
-                "CodeChef, GeeksforGeeks, and CodeStudio each have their own repo. Solutions go into clean problem-name folders.",
+                "Codeforces, CodeChef, GeeksforGeeks, and CodeStudio each have their own repo. Solutions go into clean problem-name folders.",
               gradient: "from-amber-500/10 to-orange-500/10",
               iconColor: "text-amber-400",
               delay: "delay-500",
