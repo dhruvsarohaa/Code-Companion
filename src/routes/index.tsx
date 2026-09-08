@@ -33,14 +33,13 @@ export const Route = createFileRoute("/")({
 });
 
 const PLATFORMS = [
-  { name: "All Platforms", icon: "🚀", color: "from-purple-500/20 to-pink-500/20 border-purple-500/30" },
   { name: "Codeforces", icon: "🔴", color: "from-red-500/20 to-rose-500/20 border-red-500/30" },
   { name: "CodeChef", icon: "🍳", color: "from-amber-500/20 to-orange-500/20 border-amber-500/30" },
   { name: "GeeksforGeeks", icon: "🟢", color: "from-green-500/20 to-emerald-500/20 border-green-500/30" },
   { name: "CodeStudio", icon: "🔷", color: "from-blue-500/20 to-cyan-500/20 border-blue-500/30" },
 ] as const;
 
-const SINGLE_PLATFORMS = ["Codeforces", "CodeChef", "GeeksforGeeks", "CodeStudio"] as const;
+const ALL_PLATFORM_NAMES = PLATFORMS.map((p) => p.name);
 
 const LANGUAGES = [
   "Java",
@@ -56,14 +55,34 @@ const LANGUAGES = [
 ] as const;
 
 function HomePage() {
-  const [platform, setPlatform] = useState<string>(PLATFORMS[0].name);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([...ALL_PLATFORM_NAMES]);
   const [problemName, setProblemName] = useState("");
   const [language, setLanguage] = useState<string>(LANGUAGES[0]);
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastCommits, setLastCommits] = useState<{ platform: string; commitUrl?: string }[]>([]);
 
+  const isAllSelected = selectedPlatforms.length === PLATFORMS.length;
+
+  const togglePlatform = (name: string) => {
+    setSelectedPlatforms((prev) =>
+      prev.includes(name) ? prev.filter((p) => p !== name) : [...prev, name]
+    );
+  };
+
+  const toggleAll = () => {
+    if (isAllSelected) {
+      setSelectedPlatforms([]);
+    } else {
+      setSelectedPlatforms([...ALL_PLATFORM_NAMES]);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (selectedPlatforms.length === 0) {
+      toast.error("Please select at least one platform.");
+      return;
+    }
     if (!problemName.trim()) {
       toast.error("Please enter a problem name.");
       return;
@@ -76,15 +95,12 @@ function HomePage() {
     setIsSubmitting(true);
     setLastCommits([]);
 
-    const platformsToSubmit =
-      platform === "All Platforms" ? [...SINGLE_PLATFORMS] : [platform];
-
     try {
       // Calls Gemini once on the server and pushes to all target repositories
       const result = await submitSolution({
         data: {
-          platform: platformsToSubmit.length === 1 ? platformsToSubmit[0] : undefined,
-          platforms: platformsToSubmit,
+          platform: selectedPlatforms.length === 1 ? selectedPlatforms[0] : undefined,
+          platforms: selectedPlatforms,
           problemName: problemName.trim(),
           language,
           code,
@@ -97,7 +113,10 @@ function HomePage() {
 
         if (successes.length > 0) {
           setLastCommits(successes);
-          toast.success(result.message || `Pushed to ${successes.map((s: any) => s.platform).join(", ")}!`);
+          toast.success(
+            result.message ||
+              `Pushed to ${successes.map((s: any) => s.platform).join(", ")}!`,
+          );
           setProblemName("");
           setCode("");
         }
@@ -190,29 +209,87 @@ function HomePage() {
           <div className="grid gap-7">
             {/* Platform Selection */}
             <div>
-              <label className="mb-3 block text-sm font-medium text-foreground">
-                Platform
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {PLATFORMS.map((p) => (
-                  <button
-                    key={p.name}
-                    onClick={() => setPlatform(p.name)}
-                    className={`group relative flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-300 ${
-                      platform === p.name
-                        ? `bg-gradient-to-br ${p.color} border-primary/40 text-foreground shadow-lg shadow-primary/5`
-                        : "border-border/50 bg-card/50 text-muted-foreground hover:border-border hover:bg-card hover:text-foreground"
-                    }`}
-                  >
-                    <span className="text-lg transition-transform duration-300 group-hover:scale-110">
-                      {p.icon}
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Target Platforms
+                  </label>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    {selectedPlatforms.length} of {PLATFORMS.length} selected
+                  </span>
+                  {selectedPlatforms.length > 0 && (
+                    <span className="hidden text-xs text-muted-foreground sm:inline">
+                      • {selectedPlatforms.length * 3} GitHub contributions
                     </span>
-                    <span className="truncate">{p.name}</span>
-                    {platform === p.name && (
-                      <CheckCircle2 className="ml-auto size-4 animate-scale-in text-primary" />
-                    )}
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlatforms([...ALL_PLATFORM_NAMES])}
+                    className="text-muted-foreground transition-colors hover:text-primary hover:underline underline-offset-2"
+                  >
+                    Select All
                   </button>
-                ))}
+                  <span className="text-muted-foreground/40">•</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlatforms([])}
+                    className="text-muted-foreground transition-colors hover:text-destructive hover:underline underline-offset-2"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                {/* Master All Platforms Toggle */}
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className={`group relative flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-300 ${
+                    isAllSelected
+                      ? "bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/40 text-foreground shadow-lg shadow-purple-500/5"
+                      : "border-border/50 bg-card/50 text-muted-foreground hover:border-border hover:bg-card hover:text-foreground"
+                  }`}
+                >
+                  <span className="text-lg transition-transform duration-300 group-hover:scale-110">
+                    🚀
+                  </span>
+                  <span className="truncate">All Platforms</span>
+                  {isAllSelected ? (
+                    <CheckCircle2 className="ml-auto size-4 animate-scale-in text-primary" />
+                  ) : (
+                    <span className="ml-auto size-3.5 rounded-full border border-border/60" />
+                  )}
+                </button>
+
+                {/* Individual Platform Toggles */}
+                {PLATFORMS.map((p) => {
+                  const isSelected = selectedPlatforms.includes(p.name);
+                  return (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => togglePlatform(p.name)}
+                      className={`group relative flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-300 ${
+                        isSelected
+                          ? `bg-gradient-to-br ${p.color} border-primary/40 text-foreground shadow-lg shadow-primary/5`
+                          : "border-border/50 bg-card/50 text-muted-foreground hover:border-border hover:bg-card hover:text-foreground"
+                      }`}
+                    >
+                      <span className="text-lg transition-transform duration-300 group-hover:scale-110">
+                        {p.icon}
+                      </span>
+                      <span className="truncate">{p.name}</span>
+                      {isSelected ? (
+                        <CheckCircle2 className="ml-auto size-4 animate-scale-in text-primary" />
+                      ) : (
+                        <span className="ml-auto size-3.5 rounded-full border border-border/60" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -297,7 +374,7 @@ function HomePage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || selectedPlatforms.length === 0}
                 size="lg"
                 className={`group relative overflow-hidden rounded-xl px-8 text-base font-semibold transition-all duration-300 ${
                   isSubmitting
@@ -308,12 +385,14 @@ function HomePage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 size-5 animate-spin" />
-                    Generating README & Pushing...
+                    Generating README & Pushing ({selectedPlatforms.length} {selectedPlatforms.length === 1 ? "repo" : "repos"})...
                   </>
                 ) : (
                   <>
                     <Send className="mr-2 size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                    Submit to GitHub
+                    {selectedPlatforms.length === 0
+                      ? "Select at least 1 platform"
+                      : `Push to ${selectedPlatforms.length} ${selectedPlatforms.length === 1 ? "Platform" : "Platforms"} (${selectedPlatforms.length * 3} Commits)`}
                     <ArrowRight className="ml-2 size-4 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 -translate-x-2" />
                   </>
                 )}
@@ -338,7 +417,7 @@ function HomePage() {
                     Committed successfully to {lastCommits.map((c) => c.platform).join(", ")}!
                   </p>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    Solution and README pushed in one commit
+                    {lastCommits.length * 3} commits pushed across {lastCommits.length} {lastCommits.length === 1 ? "repository" : "repositories"} (folder, README, and code)
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
